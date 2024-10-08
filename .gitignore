@@ -3,6 +3,5 @@ __*
 build/
 main.spec
 dist/
-res/
 characters/
 *.json
