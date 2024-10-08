@@ -1,12 +1,10 @@
 # stats_calculator.py
 
+import json
 import os
 import math
 from tkinter import messagebox
-from utils import map_slider_to_rarity, map_slider_to_expertise
-from abilities import ABILITIES
-from passives import PASSIVES
-
+from character_creator.utils import map_slider_to_rarity, map_slider_to_expertise
 
 
 # Expertise progression dictionary
@@ -106,6 +104,9 @@ def calculate_and_save(char_name, species, rarity_value, start_stat_vars, expert
             abilityLevels = ['LVL 1 #1', 'LVL 1 #2', 'LVL 1 #3', 'LVL 1 #4', 'LVL 3', 'LVL 5', 'LVL 8', 'LVL 10', 'LVL 13', 'LVL 15', 'LVL 18', 'LVL 20', 'LVL 23', 'LVL 25', 'LVL 28', 'LVL 30', 'LVL 33', 'LVL 35', 'LVL 38', 'LVL 40']
             ability_level_keys = ['LVL1_ABILITIES', 'LVL1_ABILITIES', 'LVL1_ABILITIES', 'LVL1_ABILITIES', 'LVL3_ABILITIES', 'LVL5_ABILITIES', 'LVL8_ABILITIES', 'LVL10_ABILITIES', 'LVL13_ABILITIES', 'LVL15_ABILITIES', 'LVL18_ABILITIES', 'LVL20_ABILITIES', 'LVL23_ABILITIES', 'LVL25_ABILITIES', 'LVL28_ABILITIES', 'LVL30_ABILITIES', 'LVL33_ABILITIES', 'LVL35_ABILITIES', 'LVL38_ABILITIES', 'LVL40_ABILITIES']
             file.write(f"____________________\n\n")
+            # Load in the json file
+            with open('./res/dep/abilities.json', 'r') as f:
+                ABILITIES = json.load(f)
             file.write(f"Abilities:\n")
             for i, ability in enumerate(abilities):
                 ability_level_key = ability_level_keys[i]  # Get the corresponding ability level key
@@ -119,6 +120,10 @@ def calculate_and_save(char_name, species, rarity_value, start_stat_vars, expert
                     file.write(f"{abilityLevels[i]}: {ability} NONE\n")
             file.write(f"____________________\n\n")
             file.write(f"Passives:\n")
+            PASSIVES = {}
+            with open('./res/dep/passives.json', 'r') as f:
+                PASSIVES = json.load(f)
+                
             passives = [passive.get() for passive in passives_vars]
             for i, passive in enumerate(passives):
                 if passive in PASSIVES:

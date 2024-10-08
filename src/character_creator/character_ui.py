@@ -1,15 +1,14 @@
 # ui.py
+import json
 import os
 import tkinter as tk
 from PIL import Image, ImageTk
 from tkinter import ttk
-from utils import PlaceholderEntry
-from stats_calculator import calculate_and_save
+from character_creator.utils import PlaceholderEntry
+from character_creator.stats_calculator import calculate_and_save
 from tkinter import filedialog, messagebox
-from abilities import ABILITIES
-from ability_tooltip import Tooltip
-from passives import PASSIVES
-from passives_tooltip import PassivesTooltip
+from character_creator.ability_tooltip import Tooltip
+from character_creator.passives_tooltip import PassivesTooltip
 
 
 
@@ -302,6 +301,10 @@ class CharacterCreatorUI:
         canvas = tk.Canvas(root, height=3, bg="black")
         canvas.grid(row=13, column=0, columnspan=9, sticky='ew')  # Adjust rowspan as needed
 
+        # load in the abilities from res/dep/abilities.json
+        ABILITIES = {}
+        with open('./res/dep/abilities.json', 'r') as f:
+            ABILITIES = json.load(f)
 
         # Create a method to create dropdowns and save their variables
         def create_ability_dropdown(row, col, level, ability_list, descriptions, indexFlag):
@@ -355,6 +358,10 @@ class CharacterCreatorUI:
         PASSIVE ABILITIES
         """
         ttk.Label(root, text=f"Passive Abilities", anchor="w").grid(row=0, column=4, padx=20, pady=5, sticky="w")
+        PASSIVES = {}
+        with open('./res/dep/passives.json', 'r') as f:
+            PASSIVES = json.load(f)
+
         for i in range(4):
             row = i // 2 + 1
             col = i % 2 + 4
