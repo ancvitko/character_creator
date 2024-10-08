@@ -1,0 +1,7 @@
+!/.gitignore
+__*
+build/
+main.spec
+dist/
+res/
+characters/
