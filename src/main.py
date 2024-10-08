@@ -1,8 +1,8 @@
 import os
 import json
 import tkinter as tk
-from character_creator.character_ui import CharacterCreatorUI
-from spell_creator.ability_ui import AbilityUI
+from creator_character.character_ui import CharacterCreatorUI
+from creator_spell.ability_ui import AbilityUI
 import tkinter.ttk as ttk
 import sv_ttk
 from res.dep.abilities import ABILITIES  # Import your existing ABILITIES dictionary from Python file

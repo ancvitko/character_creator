@@ -4,11 +4,11 @@ import os
 import tkinter as tk
 from PIL import Image, ImageTk
 from tkinter import ttk
-from character_creator.utils import PlaceholderEntry
-from character_creator.stats_calculator import calculate_and_save
+from creator_character.utils import PlaceholderEntry
+from creator_character.stats_calculator import calculate_and_save
 from tkinter import filedialog, messagebox
-from character_creator.ability_tooltip import Tooltip
-from character_creator.passives_tooltip import PassivesTooltip
+from creator_character.ability_tooltip import Tooltip
+from creator_character.passives_tooltip import PassivesTooltip
 
 
 

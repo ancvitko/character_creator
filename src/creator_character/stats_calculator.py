@@ -4,7 +4,7 @@ import json
 import os
 import math
 from tkinter import messagebox
-from character_creator.utils import map_slider_to_rarity, map_slider_to_expertise
+from creator_character.utils import map_slider_to_rarity, map_slider_to_expertise
 
 
 # Expertise progression dictionary
