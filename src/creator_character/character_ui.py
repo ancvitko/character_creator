@@ -192,34 +192,27 @@ class CharacterCreatorUI:
         self.rarity_var = tk.IntVar(value=0)
         
         # Pre-established species list
-        species_list = ["Beast", "Dragon", "Elf", "Elemental", "Giant", "Human", "Mech", "Minotaur", "Ravenfolk", "Satyr", "Spirit", "Undead"]  # Add more species as needed
+        species_list = ["Dragon", "Beast","Elf", "Elemental", "Giant", "Human", "Mech", "Minotaur", "Ravenfolk", "Satyr", "Spirit", "Undead"]  # Add more species as needed
+        species_list.sort()  # Sort the species list
         self.species_var = tk.StringVar(value=species_list[0])  # Default to the first species
 
         # Character Name
-        name_label = ttk.Label(root, text="Character Name:", anchor="w").grid(row=1, column=0, padx=20, pady=10, sticky="w")
+        ttk.Label(root, text="Character Name:", anchor="w").grid(row=1, column=0, padx=20, pady=10, sticky="w")
         self.name_entry.grid(row=1, column=1, padx=(10, 0), pady=10)
 
         # Species Dropdown
         ttk.Label(root, text="Species:", anchor="w").grid(row=2, column=0, padx=20, pady=10, sticky="w")
         species_dropdown = ttk.Combobox(root, textvariable=self.species_var, values=species_list, state="readonly")
         species_dropdown.grid(row=2, column=1, padx=(35, 0), pady=10)
-
-        species_dropdown.bind("<ButtonPress>", lambda _: self.on_modify())
-        
+        species_dropdown.bind("<ButtonPress>", lambda _: self.on_modify())   
         species_dropdown.bind("<<ComboboxSelected>>", lambda _: species_dropdown.selection_clear())
-
-        # Bind focus out event to reset selection
         species_dropdown.bind("<FocusOut>", lambda _: species_dropdown.selection_clear())
 
         
-
         # Rarity slider - align with expertise labels
         ttk.Label(root, text="Rarity:", anchor="w").grid(row=3, column=0, padx=20, pady=10, sticky="w")
-        
-        rarity_slider = ttk.Scale(root, from_=0, to=4, orient="horizontal", variable=self.rarity_var, 
-                                command=lambda v: self.rarity_var.set(int(float(v))))
+        rarity_slider = ttk.Scale(root, from_=0, to=4, orient="horizontal", variable=self.rarity_var, command=lambda v: self.rarity_var.set(int(float(v))))
         rarity_slider.grid(row=3, column=1, padx=(70, 0), pady=10, sticky="w")  # Align with the label
-
         rarity_slider.bind("<ButtonPress>", lambda _: self.on_modify())
 
         # Rarity label (dynamic)
@@ -273,8 +266,6 @@ class CharacterCreatorUI:
                 self.passive_vars,
             ))
         ))
-
-
         save_button.grid(row=0, column=1, columnspan=1, pady=20)
 
         # Clear Values Button
@@ -361,8 +352,9 @@ class CharacterCreatorUI:
         PASSIVES = {}
         with open('./res/dep/passives.json', 'r') as f:
             PASSIVES = json.load(f)
-
-        for i in range(4):
+            PASSIVES = dict(sorted(PASSIVES.items()))
+        
+        for i in range(6):
             row = i // 2 + 1
             col = i % 2 + 4
 
@@ -380,10 +372,7 @@ class CharacterCreatorUI:
             tooltip = PassivesTooltip(passive_dropdown)
             tooltip.set_descriptions(PASSIVES)
 
-            # Bind selection event to clear focus selection
             passive_dropdown.bind("<<ComboboxSelected>>", lambda _, ad=passive_dropdown: ad.selection_clear())
-
-            # Bind focus out event to reset selection
             passive_dropdown.bind("<FocusOut>", lambda _, ad=passive_dropdown: ad.selection_clear())
 
     
@@ -395,12 +384,10 @@ class CharacterCreatorUI:
             self.rarity_var.set(0)  # Reset rarity slider to default
             for var in self.expertise_vars.values():
                 var.set(2)  # Reset expertise sliders to 'MEDIUM'
-            for var in self.start_stat_vars:
-                var.set("")  # Clear starting stat entries
-            for var in self.passive_vars:
-                var.set("")  # Reset all dropdowns to an empty value or default value
-
-            # Clear ability dropdowns
-            for var in self.ability_vars:
-                var.set("")  # Reset all dropdowns to an empty value or default value
+            for var in self.start_stat_vars: # Clear starting stat entries
+                var.set("")  
+            for var in self.passive_vars: #Clear passive dropdowns
+                var.set("")
+            for var in self.ability_vars: # Clear ability dropdowns
+                var.set("")
             self.modified = False

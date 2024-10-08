@@ -59,8 +59,13 @@ class PassivesTooltip:
 
         current_value = self.widget.get() or ""
         if current_value in self.passive_descriptions:
-            description = self.passive_descriptions[current_value]['description']
-            value = self.passive_descriptions[current_value]['value']
-            self.tooltip_label.config(text=f"{description}\nValue: {value}")
+            description1 = self.passive_descriptions[current_value]['description1']
+            value1 = self.passive_descriptions[current_value]['value1']
+            description2 = self.passive_descriptions[current_value]['description2']
+            value2 = self.passive_descriptions[current_value]['value2']
+            if description1 != "None":
+                self.tooltip_label.config(text=f"{description1}\nValue: {value1}")
+            if description2 != "None":
+                self.tooltip_label.config(text=f"{description1}\nValue: {value1}\n\n{description2}\nValue: {value2}")
         else:
             self.tooltip_label.config(text="")  # Clear if not found

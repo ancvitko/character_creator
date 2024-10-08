@@ -128,8 +128,10 @@ def calculate_and_save(char_name, species, rarity_value, start_stat_vars, expert
             for i, passive in enumerate(passives):
                 if passive in PASSIVES:
                     file.write(f"Passive #{i}: {passive}\n")
-                    file.write(f"\tDescription: {PASSIVES[passive]['description']}\n")
-                    file.write(f"\tValue: {PASSIVES[passive]['value']}\n\n")
+                    file.write(f"\tDescription: {PASSIVES[passive]['description1']}\n")
+                    file.write(f"\tValue: {PASSIVES[passive]['value1']}\n\n")
+                    file.write(f"\tDescription: {PASSIVES[passive]['description2']}\n")
+                    file.write(f"\tValue: {PASSIVES[passive]['value2']}\n\n")
                 else:
                     file.write(f"Passive #{i}: NONE\n")
             file.write(f"____________________\n\n")

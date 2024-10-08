@@ -56,10 +56,10 @@ class MainMenu:
             widget.destroy()
 
         root.title("Project Shardfall Suite")
-        open_character_creator_button = ttk.Button(self.root, text="Character Creator", command=self.open_character_creator)
-        open_ability_creator_button = ttk.Button(self.root, text="Ability Creator", command=self.open_ability_creator)
-        open_character_creator_button.pack(pady=50)
-        open_ability_creator_button.pack(pady=50)
+        open_character_creator_button = ttk.Button(self.root, text="Character Creator", command=self.open_character_creator, width=20)
+        open_ability_creator_button = ttk.Button(self.root, text="Ability Creator", command=self.open_ability_creator, width=20)
+        open_character_creator_button.pack(pady=(300, 0))
+        open_ability_creator_button.pack(pady=10)
 
     def open_character_creator(self):
         """Opens the Character Creator UI."""
