@@ -2,7 +2,7 @@ import os
 import json
 import tkinter as tk
 from character_creator.character_ui import CharacterCreatorUI
-from character_creator.ability_ui import AbilityUI
+from spell_creator.ability_ui import AbilityUI
 import tkinter.ttk as ttk
 import sv_ttk
 from res.dep.abilities import ABILITIES  # Import your existing ABILITIES dictionary from Python file
@@ -49,7 +49,7 @@ class MainMenu:
                 print(f"passives.json created at {passives_file}")
         else:
             print(f"passives.json already exists at {passives_file}")
-            
+
     def setup_main_menu(self):
         """Sets up the main menu UI."""
         for widget in self.root.winfo_children():
