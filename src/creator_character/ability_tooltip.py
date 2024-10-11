@@ -24,7 +24,7 @@ class Tooltip:
         Calculate the position of the tooltip relative to the widget.
         """
         x = self.widget.winfo_rootx() + 175
-        y = self.widget.winfo_rooty()
+        y = self.widget.winfo_rooty() - self.tooltip_window.winfo_reqheight() + 65
         return x, y
 
     def show_tooltip(self, event=None):
@@ -60,8 +60,25 @@ class Tooltip:
         current_value = self.widget.get() or ""
         if current_value in self.ability_descriptions:
             description = self.ability_descriptions[current_value]['description']
-            value = self.ability_descriptions[current_value]['value']
+            tooltip_text = f"{description}\nEffect#1: {self.ability_descriptions[current_value]['effect_1']}\nValue#1: {self.ability_descriptions[current_value]['value_1']}"
             cooldown = self.ability_descriptions[current_value]['cooldown']
-            self.tooltip_label.config(text=f"{description}\nValue: {value}\nCooldown: {cooldown} turn(s)")
+
+            if self.ability_descriptions[current_value]['effect_2'] != 'NONE':
+                tooltip_text += f"\nEffect#2: {self.ability_descriptions[current_value]['effect_2']}\nValue#2: {self.ability_descriptions[current_value]['value_2']}"
+
+            if self.ability_descriptions[current_value]['effect_3'] != 'NONE':
+                tooltip_text += f"\nEffect#3: {self.ability_descriptions[current_value]['effect_3']}\nValue#3: {self.ability_descriptions[current_value]['value_3']}"
+
+            if self.ability_descriptions[current_value]['effect_4'] != 'NONE':
+                tooltip_text += f"\nEffect#4: {self.ability_descriptions[current_value]['effect_4']}\nValue#4: {self.ability_descriptions[current_value]['value_4']}"
+
+            if self.ability_descriptions[current_value]['effect_5'] != 'NONE':
+                tooltip_text += f"\nEffect#5: {self.ability_descriptions[current_value]['effect_5']}\nValue#5: {self.ability_descriptions[current_value]['value_5']}"
+
+            if self.ability_descriptions[current_value]['effect_6'] != 'NONE':
+                tooltip_text += f"\nEffect#6: {self.ability_descriptions[current_value]['effect_6']}\nValue#6: {self.ability_descriptions[current_value]['value_6']}"
+
+            tooltip_text += f"\nCooldown: {cooldown} turn(s)"
+            self.tooltip_label.config(text=tooltip_text)
         else:
             self.tooltip_label.config(text="")  # Clear if not found

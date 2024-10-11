@@ -114,7 +114,24 @@ def calculate_and_save(char_name, species, rarity_value, start_stat_vars, expert
                     ability_data = ABILITIES[ability_level_key][ability]
                     file.write(f"{abilityLevels[i]}: {ability}\n")
                     file.write(f"\tDescription: {ability_data['description']}\n")
-                    file.write(f"\tValue: {ability_data['value']}\n")
+                    if ability_data['effect_1'] != 'NONE' and ability_data['effect_1'] != "":
+                        file.write(f"\tEffect#1: {ability_data['effect_1']}\n")
+                        file.write(f"\tValue#1: {ability_data['value_1']}\n")
+                    if ability_data['effect_2'] != 'NONE' and ability_data['effect_2'] != "":
+                        file.write(f"\tEffect#2: {ability_data['effect_2']}\n")
+                        file.write(f"\tValue#2: {ability_data['value_2']}\n")
+                    if ability_data['effect_3'] != 'NONE' and ability_data['effect_3'] != "":
+                        file.write(f"\tEffect#3: {ability_data['effect_3']}\n")
+                        file.write(f"\tValue#3: {ability_data['value_3']}\n")
+                    if ability_data['effect_4'] != 'NONE' and ability_data['effect_4'] != "":
+                        file.write(f"\tEffect#4: {ability_data['effect_4']}\n")
+                        file.write(f"\tValue#4: {ability_data['value_4']}\n")
+                    if ability_data['effect_5'] != 'NONE' and ability_data['effect_5'] != "":
+                        file.write(f"\tEffect#5: {ability_data['effect_5']}\n")
+                        file.write(f"\tValue#5: {ability_data['value_5']}\n")
+                    if ability_data['effect_6'] != 'NONE' and ability_data['effect_6'] != "":
+                        file.write(f"\tEffect#6: {ability_data['effect_6']}\n")
+                        file.write(f"\tValue#6: {ability_data['value_6']}\n")
                     file.write(f"\tCooldown: {ability_data['cooldown']}\n\n")
                 else:
                     file.write(f"{abilityLevels[i]}: {ability} NONE\n")
