@@ -105,7 +105,7 @@ def calculate_and_save(char_name, species, rarity_value, start_stat_vars, expert
             ability_level_keys = ['LVL1_ABILITIES', 'LVL1_ABILITIES', 'LVL1_ABILITIES', 'LVL1_ABILITIES', 'LVL3_ABILITIES', 'LVL5_ABILITIES', 'LVL8_ABILITIES', 'LVL10_ABILITIES', 'LVL13_ABILITIES', 'LVL15_ABILITIES', 'LVL18_ABILITIES', 'LVL20_ABILITIES', 'LVL23_ABILITIES', 'LVL25_ABILITIES', 'LVL28_ABILITIES', 'LVL30_ABILITIES', 'LVL33_ABILITIES', 'LVL35_ABILITIES', 'LVL38_ABILITIES', 'LVL40_ABILITIES']
             file.write(f"____________________\n\n")
             # Load in the json file
-            with open('./res/dep/abilities.json', 'r') as f:
+            with open('./dep/abilities.json', 'r') as f:
                 ABILITIES = json.load(f)
             file.write(f"Abilities:\n")
             for i, ability in enumerate(abilities):
@@ -121,7 +121,7 @@ def calculate_and_save(char_name, species, rarity_value, start_stat_vars, expert
             file.write(f"____________________\n\n")
             file.write(f"Passives:\n")
             PASSIVES = {}
-            with open('./res/dep/passives.json', 'r') as f:
+            with open('./dep/passives.json', 'r') as f:
                 PASSIVES = json.load(f)
                 
             passives = [passive.get() for passive in passives_vars]

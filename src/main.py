@@ -3,10 +3,11 @@ import json
 import tkinter as tk
 from creator_character.character_ui import CharacterCreatorUI
 from creator_spell.ability_ui import AbilityUI
+from creator_passive.passive_ui import PassiveUI
 import tkinter.ttk as ttk
 import sv_ttk
-from res.dep.abilities import ABILITIES  # Import your existing ABILITIES dictionary from Python file
-from res.dep.passives import PASSIVES  # Import your existing PASSIVES dictionary from Python file
+from dep.abilities import ABILITIES  # Import your existing ABILITIES dictionary from Python file
+from dep.passives import PASSIVES  # Import your existing PASSIVES dictionary from Python file
 
 class MainMenu:
     def __init__(self, root):
@@ -20,7 +21,8 @@ class MainMenu:
         """Creates the required directories if they don't exist."""
         required_directories = [
             "./characters",
-            "./res/dep"
+            "./dep",
+            "./res/img",
         ]
         for directory in required_directories:
             if not os.path.exists(directory):
@@ -28,7 +30,7 @@ class MainMenu:
 
     def create_abilities_json(self):
         """Creates abilities.json from ABILITIES Python dictionary if it doesn't exist."""
-        abilities_file = './res/dep/abilities.json'
+        abilities_file = './dep/abilities.json'
         
         # Check if the abilities.json file already exists
         if not os.path.exists(abilities_file):
@@ -40,7 +42,7 @@ class MainMenu:
 
     def create_passives_json(self):
         """Creates passives.json from PASSIVES Python dictionary if it doesn't exist."""
-        passives_file = './res/dep/passives.json'
+        passives_file = './dep/passives.json'
         
         # Check if the passives.json file already exists
         if not os.path.exists(passives_file):
@@ -59,7 +61,9 @@ class MainMenu:
         open_character_creator_button = ttk.Button(self.root, text="Character Creator", command=self.open_character_creator, width=20)
         open_ability_creator_button = ttk.Button(self.root, text="Ability Creator", command=self.open_ability_creator, width=20)
         open_character_creator_button.pack(pady=(300, 0))
-        open_ability_creator_button.pack(pady=10)
+        open_ability_creator_button.pack(pady=(10, 0))
+        open_passive_creator_button = ttk.Button(self.root, text="Passive Creator", command=self.open_passive_creator, width=20)
+        open_passive_creator_button.pack(pady=(10, 0))
 
     def open_character_creator(self):
         """Opens the Character Creator UI."""
@@ -74,6 +78,13 @@ class MainMenu:
             widget.destroy()
         ability_creator = AbilityUI(self.root, self.setup_main_menu)
         root.title("Project Shardfall Ability Creator")
+
+    def open_passive_creator(self):
+        """Opens the Passive Creator UI."""
+        for widget in self.root.winfo_children():
+            widget.destroy()
+        passive_creator = PassiveUI(self.root, self.setup_main_menu)
+        root.title("Project Shardfall Passive Creator")
 
 
 if __name__ == "__main__":

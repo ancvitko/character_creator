@@ -294,7 +294,7 @@ class CharacterCreatorUI:
 
         # load in the abilities from res/dep/abilities.json
         ABILITIES = {}
-        with open('./res/dep/abilities.json', 'r') as f:
+        with open('./dep/abilities.json', 'r') as f:
             ABILITIES = json.load(f)
 
         # Create a method to create dropdowns and save their variables
@@ -350,7 +350,7 @@ class CharacterCreatorUI:
         """
         ttk.Label(root, text=f"Passive Abilities", anchor="w").grid(row=0, column=4, padx=20, pady=5, sticky="w")
         PASSIVES = {}
-        with open('./res/dep/passives.json', 'r') as f:
+        with open('./dep/passives.json', 'r') as f:
             PASSIVES = json.load(f)
             PASSIVES = dict(sorted(PASSIVES.items()))
         
