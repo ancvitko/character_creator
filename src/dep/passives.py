@@ -53,4 +53,10 @@ PASSIVES = {
         'description2': 'Decreases PHYS ATK.',
         'value2': '-3%',
     },
+    'Giant Body' : {
+        'description1': 'Increases HP.',
+        'value1': '+25%',
+        'description2': 'Lowers SPD.',
+        'value2': '-10%',
+    },
 }

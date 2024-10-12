@@ -9,6 +9,8 @@ from creator_character.stats_calculator import calculate_and_save
 from tkinter import filedialog, messagebox
 from creator_character.ability_tooltip import Tooltip
 from creator_character.passives_tooltip import PassivesTooltip
+from PIL import ImageDraw
+from PIL import ImageFont
 
 
 
@@ -375,7 +377,46 @@ class CharacterCreatorUI:
             passive_dropdown.bind("<<ComboboxSelected>>", lambda _, ad=passive_dropdown: ad.selection_clear())
             passive_dropdown.bind("<FocusOut>", lambda _, ad=passive_dropdown: ad.selection_clear())
 
-    
+        # Create a canvas for vertical lines
+        canvas = tk.Canvas(root, width=3, bg="black")
+        canvas.grid(row=14, column=4, rowspan=10, sticky='ns', padx=(250, 0))
+
+        # Load and resize the main image
+        image = Image.open("./res/img/SuiteLogo512.png")  # Ensure the correct file extension is used
+        image = image.convert("RGBA")  # Convert the image to RGB mode to avoid palette issues
+        image = image.resize((500, 300), Image.LANCZOS)  # Better resampling filter
+
+        # Load the same image as a smaller version
+        smaller_image = Image.open("./res/img/SuiteLogo512.png")  # Load the image again
+        smaller_image = smaller_image.convert("RGBA")  # Convert to RGB mode
+        smaller_image = smaller_image.resize((50, 75), Image.LANCZOS)  # Resize to a smaller image (50x75)
+
+        # Paste the smaller image onto the main image at a specific position
+        paste_position = (120, 150)  # Coordinates where you want to paste the smaller image
+        image.paste(smaller_image, paste_position)
+
+        # Create a draw object to modify the main image
+        draw = ImageDraw.Draw(image)
+
+        # Optional: Load a custom font (if available) or use default
+        # font = ImageFont.truetype("./res/fonts/your_font.ttf", 30)
+        font = ImageFont.load_default()  # Use the default font
+
+        # Define the position and text
+        text = str(self.map_slider_to_rarity(self.rarity_var.get()))  # Get the character name from the entry
+        text_position = (10, 10)  # Top-left corner of the image
+        text_color = (255, 0, 0)  # Red color in RGB format
+
+        # Draw the text on the main image
+        draw.text(text_position, text, fill=text_color, font=font)
+
+        # Convert the modified image to a Tkinter-compatible PhotoImage object
+        self.photo = ImageTk.PhotoImage(image)  # Store a reference to the image
+
+        # Create a label to display the image
+        image_label = ttk.Label(self.root, image=self.photo)  # Use the stored reference
+        image_label.grid(row=14, column=5, rowspan=10, padx=(20, 0), pady=20)
+
     # Function to clear values
     def clear_values(self):
         if messagebox.askyesno("Confirm Clear", "Are you sure you want to clear all values?"):
