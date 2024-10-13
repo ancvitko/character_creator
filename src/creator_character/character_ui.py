@@ -424,15 +424,31 @@ class CharacterCreatorUI:
             # Calculate the stats for the given level
             self.current_health -= int(expertise_progression[map_slider_to_expertise(self.expertise_vars.get('HP').get())]['every_level']['HP'])
             ## for every 5th level add the every_5th_level value
-            if self.current_level % 5 == 0:
+            if (self.current_level+1) % 5 == 0:
                 self.current_health -= int(expertise_progression[map_slider_to_expertise(self.expertise_vars.get('HP').get())]['every_5th_level']['HP'])
-            self.current_speed -= 1
-            self.current_phys_atk -= 1
-            self.current_phys_def -= 1
-            self.current_pir_atk -= 1
-            self.current_pir_def -= 1
-            self.current_mag_atk -= 1
-            self.current_mag_def -= 1
+            self.current_speed -= int(expertise_progression[map_slider_to_expertise(self.expertise_vars.get('Speed').get())]['every_level']['Secondary'])
+            if (self.current_level+1) % 5 == 0:
+                self.current_speed -= int(expertise_progression[map_slider_to_expertise(self.expertise_vars.get('Speed').get())]['every_5th_level']['Secondary'])
+
+            self.current_phys_atk -= int(expertise_progression[map_slider_to_expertise(self.expertise_vars.get('PHYS_ATK').get())]['every_level']['Secondary'])
+            if (self.current_level+1) % 5 == 0:
+                self.current_phys_atk -= int(expertise_progression[map_slider_to_expertise(self.expertise_vars.get('PHYS_ATK').get())]['every_5th_level']['Secondary'])
+
+            self.current_phys_def -= int(expertise_progression[map_slider_to_expertise(self.expertise_vars.get('PHYS_DEF').get())]['every_level']['Secondary'])
+            if (self.current_level+1) % 5 == 0:
+                self.current_phys_def -= int(expertise_progression[map_slider_to_expertise(self.expertise_vars.get('PHYS_DEF').get())]['every_5th_level']['Secondary'])
+            self.current_pir_atk -= int(expertise_progression[map_slider_to_expertise(self.expertise_vars.get('PIR_ATK').get())]['every_level']['Secondary'])
+            if (self.current_level+1) % 5 == 0:
+                self.current_pir_atk -= int(expertise_progression[map_slider_to_expertise(self.expertise_vars.get('PIR_ATK').get())]['every_5th_level']['Secondary'])
+            self.current_pir_def -= int(expertise_progression[map_slider_to_expertise(self.expertise_vars.get('PIR_DEF').get())]['every_level']['Secondary'])
+            if (self.current_level+1) % 5 == 0:
+                self.current_pir_def -= int(expertise_progression[map_slider_to_expertise(self.expertise_vars.get('PIR_DEF').get())]['every_5th_level']['Secondary'])
+            self.current_mag_atk -= int(expertise_progression[map_slider_to_expertise(self.expertise_vars.get('MAG_ATK').get())]['every_level']['Secondary'])
+            if (self.current_level+1) % 5 == 0:
+                self.current_mag_atk -= int(expertise_progression[map_slider_to_expertise(self.expertise_vars.get('MAG_ATK').get())]['every_5th_level']['Secondary'])
+            self.current_mag_def -= int(expertise_progression[map_slider_to_expertise(self.expertise_vars.get('MAG_DEF').get())]['every_level']['Secondary'])
+            if (self.current_level+1) % 5 == 0:
+                self.current_mag_def -= int(expertise_progression[map_slider_to_expertise(self.expertise_vars.get('MAG_DEF').get())]['every_5th_level']['Secondary'])
         self.drawPreview()
 
     def next_level(self):
@@ -443,18 +459,31 @@ class CharacterCreatorUI:
                         increase_every_5th_level = expertise_progression[expertise_level]['every_5th_level']['HP']
                         '''
             self.current_level += 1
-            print(expertise_progression[map_slider_to_expertise(self.expertise_vars.get('HP').get())]['every_level']['HP'] + expertise_progression[map_slider_to_expertise(self.expertise_vars.get('HP').get())]['every_5th_level']['HP'])
             self.current_health += int(expertise_progression[map_slider_to_expertise(self.expertise_vars.get('HP').get())]['every_level']['HP'])
             ## for every 5th level add the every_5th_level value
             if self.current_level % 5 == 0:
                 self.current_health += int(expertise_progression[map_slider_to_expertise(self.expertise_vars.get('HP').get())]['every_5th_level']['HP'])
-            self.current_speed += 1
-            self.current_phys_atk += 1
-            self.current_phys_def += 1
-            self.current_pir_atk += 1
-            self.current_pir_def += 1
-            self.current_mag_atk += 1
-            self.current_mag_def += 1
+            self.current_speed += int(expertise_progression[map_slider_to_expertise(self.expertise_vars.get('Speed').get())]['every_level']['Secondary'])
+            if self.current_level % 5 == 0:
+                self.current_speed += int(expertise_progression[map_slider_to_expertise(self.expertise_vars.get('Speed').get())]['every_5th_level']['Secondary'])
+            self.current_phys_atk += int(expertise_progression[map_slider_to_expertise(self.expertise_vars.get('PHYS_ATK').get())]['every_level']['Secondary'])
+            if self.current_level % 5 == 0:
+                self.current_phys_atk += int(expertise_progression[map_slider_to_expertise(self.expertise_vars.get('PHYS_ATK').get())]['every_5th_level']['Secondary'])
+            self.current_phys_def += int(expertise_progression[map_slider_to_expertise(self.expertise_vars.get('PHYS_DEF').get())]['every_level']['Secondary'])
+            if self.current_level % 5 == 0:
+                self.current_phys_def += int(expertise_progression[map_slider_to_expertise(self.expertise_vars.get('PHYS_DEF').get())]['every_5th_level']['Secondary'])
+            self.current_pir_atk += int(expertise_progression[map_slider_to_expertise(self.expertise_vars.get('PIR_ATK').get())]['every_level']['Secondary'])
+            if self.current_level % 5 == 0:
+                self.current_pir_atk += int(expertise_progression[map_slider_to_expertise(self.expertise_vars.get('PIR_ATK').get())]['every_5th_level']['Secondary'])
+            self.current_pir_def += int(expertise_progression[map_slider_to_expertise(self.expertise_vars.get('PIR_DEF').get())]['every_level']['Secondary'])
+            if self.current_level % 5 == 0:
+                self.current_pir_def += int(expertise_progression[map_slider_to_expertise(self.expertise_vars.get('PIR_DEF').get())]['every_5th_level']['Secondary'])
+            self.current_mag_atk += int(expertise_progression[map_slider_to_expertise(self.expertise_vars.get('MAG_ATK').get())]['every_level']['Secondary'])
+            if self.current_level % 5 == 0:
+                self.current_mag_atk += int(expertise_progression[map_slider_to_expertise(self.expertise_vars.get('MAG_ATK').get())]['every_5th_level']['Secondary'])
+            self.current_mag_def += int(expertise_progression[map_slider_to_expertise(self.expertise_vars.get('MAG_DEF').get())]['every_level']['Secondary'])
+            if self.current_level % 5 == 0:
+                self.current_mag_def += int(expertise_progression[map_slider_to_expertise(self.expertise_vars.get('MAG_DEF').get())]['every_5th_level']['Secondary'])
         self.drawPreview()
 
     # Function to clear values
