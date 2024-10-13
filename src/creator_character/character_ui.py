@@ -2,10 +2,11 @@
 import json
 import os
 import tkinter as tk
+import math
 from PIL import Image, ImageTk
 from tkinter import ttk
-from creator_character.utils import PlaceholderEntry
-from creator_character.stats_calculator import calculate_and_save
+from creator_character.utils import PlaceholderEntry, map_slider_to_expertise
+from creator_character.stats_calculator import calculate_and_save, expertise_progression
 from tkinter import filedialog, messagebox
 from creator_character.ability_tooltip import Tooltip
 from creator_character.passives_tooltip import PassivesTooltip
@@ -23,12 +24,23 @@ class CharacterCreatorUI:
         self.ability_vars = []  # Store ability dropdown variables
         self.passive_vars = []  # Store passive ability dropdown variables
         self.modified = False  # Flag to track changes
+        self.current_level = 1
+        self.current_health = 0
+        self.current_speed = 0
+        self.current_phys_atk = 0
+        self.current_phys_def = 0
+        self.current_pir_atk = 0
+        self.current_pir_def = 0
+        self.current_mag_atk = 0
+        self.current_mag_def = 0
 
         self.setup_ui(root)
+        self.drawPreview()
 
     def on_modify(self, *_):
         """Sets the modified flag to True whenever a change is made."""
         self.modified = True
+        self.drawPreview()
 
     def load_character(self):
         # Open a file dialog to select a character file with default directory './characters/'
@@ -124,9 +136,19 @@ class CharacterCreatorUI:
                         passive_var.set(passives[i])
                     else:
                         passive_var.set("")  # Reset any leftover passive vars if not present in the file
+                
 
-
+            self.current_level = 1
+            self.current_health = int(self.start_stat_vars[0].get())
+            self.current_speed = int(self.start_stat_vars[1].get())
+            self.current_phys_atk = int(self.start_stat_vars[2].get())
+            self.current_phys_def = int(self.start_stat_vars[3].get())
+            self.current_pir_atk = int(self.start_stat_vars[4].get())
+            self.current_pir_def = int(self.start_stat_vars[5].get())
+            self.current_mag_atk = int(self.start_stat_vars[6].get())
+            self.current_mag_def = int(self.start_stat_vars[7].get())
             self.modified = False  # Reset the modified flag after loading a character
+            self.drawPreview()
         except Exception as e:
             messagebox.showerror("Error", f"Could not load character: {e}")
 
@@ -215,7 +237,7 @@ class CharacterCreatorUI:
         ttk.Label(root, text="Rarity:", anchor="w").grid(row=3, column=0, padx=20, pady=10, sticky="w")
         rarity_slider = ttk.Scale(root, from_=0, to=4, orient="horizontal", variable=self.rarity_var, command=lambda v: self.rarity_var.set(int(float(v))))
         rarity_slider.grid(row=3, column=1, padx=(70, 0), pady=10, sticky="w")  # Align with the label
-        rarity_slider.bind("<ButtonPress>", lambda _: self.on_modify())
+        rarity_slider.bind("<ButtonRelease>", lambda _: self.on_modify())
 
         # Rarity label (dynamic)
         self.rarity_label = ttk.Label(root, text=self.map_slider_to_rarity(self.rarity_var.get()), anchor="w")
@@ -251,9 +273,9 @@ class CharacterCreatorUI:
         self.start_stat_entries = []
 
         for i, stat in enumerate(stat_labels):
-            ttk.Label(root, text=f"Starting {stat}:", anchor="w").grid(row=i+5, column=4, padx=(50, 20), pady=5, sticky="w")
+            ttk.Label(root, text=f"Starting {stat}:", anchor="w").grid(row=i+5, column=4, padx=(20, 20), pady=5, sticky="w")
             entry = PlaceholderEntry(root, placeholder="1-20 recommended", textvariable=self.start_stat_vars[i], justify="left")
-            entry.grid(row=i+5, column=5, padx=(0, 20), pady=5)
+            entry.grid(row=i+5, column=4, padx=(150, 0), pady=5)
             self.start_stat_entries.append(entry)
 
         # Save Button
@@ -360,7 +382,10 @@ class CharacterCreatorUI:
             row = i // 2 + 1
             col = i % 2 + 4
 
-            ttk.Label(root, text=f"Passive #{i+1}", anchor="w").grid(row=row, column=col, padx=(20, 0), pady=5, sticky="w")
+            if col == 5:
+                ttk.Label(root, text=f"Passive #{i+1}", anchor="w").grid(row=row, column=col, padx=(150, 0), pady=5, sticky="w")
+            else:
+                ttk.Label(root, text=f"Passive #{i+1}", anchor="w").grid(row=row, column=col, padx=(20, 0), pady=5, sticky="w")
             # Create a StringVar for the dropdown and store it in the list
             passive_var = tk.StringVar(value="")
             self.passive_vars.append(passive_var)
@@ -381,41 +406,56 @@ class CharacterCreatorUI:
         canvas = tk.Canvas(root, width=3, bg="black")
         canvas.grid(row=14, column=4, rowspan=10, sticky='ns', padx=(250, 0))
 
-        # Load and resize the main image
-        image = Image.open("./res/img/SuiteLogo512.png")  # Ensure the correct file extension is used
-        image = image.convert("RGBA")  # Convert the image to RGB mode to avoid palette issues
-        image = image.resize((500, 300), Image.LANCZOS)  # Better resampling filter
+        # Create a button to load the drawPreview
+        preview_button = ttk.Button(root, text="Refresh Preview", command=self.drawPreview)
+        preview_button.grid(row=14, column=5, pady=(5, 5), padx=(0, 0))
 
-        # Load the same image as a smaller version
-        smaller_image = Image.open("./res/img/SuiteLogo512.png")  # Load the image again
-        smaller_image = smaller_image.convert("RGBA")  # Convert to RGB mode
-        smaller_image = smaller_image.resize((50, 75), Image.LANCZOS)  # Resize to a smaller image (50x75)
+        # Previous Level Button
+        prev_button = ttk.Button(root, text="Previous Level", command=self.prev_level)
+        prev_button.grid(row=14, column=5, pady=(5, 5), padx=(300, 0))
 
-        # Paste the smaller image onto the main image at a specific position
-        paste_position = (120, 150)  # Coordinates where you want to paste the smaller image
-        image.paste(smaller_image, paste_position)
+        # Next Level Button
+        next_button = ttk.Button(root, text="Next Level", command=self.next_level)
+        next_button.grid(row=14, column=5, pady=(5, 5), padx=(550, 0))
 
-        # Create a draw object to modify the main image
-        draw = ImageDraw.Draw(image)
+    def prev_level(self):
+        if self.current_level > 1:
+            self.current_level -= 1
+            # Calculate the stats for the given level
+            self.current_health -= int(expertise_progression[map_slider_to_expertise(self.expertise_vars.get('HP').get())]['every_level']['HP'])
+            ## for every 5th level add the every_5th_level value
+            if self.current_level % 5 == 0:
+                self.current_health -= int(expertise_progression[map_slider_to_expertise(self.expertise_vars.get('HP').get())]['every_5th_level']['HP'])
+            self.current_speed -= 1
+            self.current_phys_atk -= 1
+            self.current_phys_def -= 1
+            self.current_pir_atk -= 1
+            self.current_pir_def -= 1
+            self.current_mag_atk -= 1
+            self.current_mag_def -= 1
+        self.drawPreview()
 
-        # Optional: Load a custom font (if available) or use default
-        # font = ImageFont.truetype("./res/fonts/your_font.ttf", 30)
-        font = ImageFont.load_default()  # Use the default font
-
-        # Define the position and text
-        text = str(self.map_slider_to_rarity(self.rarity_var.get()))  # Get the character name from the entry
-        text_position = (10, 10)  # Top-left corner of the image
-        text_color = (255, 0, 0)  # Red color in RGB format
-
-        # Draw the text on the main image
-        draw.text(text_position, text, fill=text_color, font=font)
-
-        # Convert the modified image to a Tkinter-compatible PhotoImage object
-        self.photo = ImageTk.PhotoImage(image)  # Store a reference to the image
-
-        # Create a label to display the image
-        image_label = ttk.Label(self.root, image=self.photo)  # Use the stored reference
-        image_label.grid(row=14, column=5, rowspan=10, padx=(20, 0), pady=20)
+    def next_level(self):
+        if self.current_level < 40:
+            '''
+                              if stat == 'HP':
+                        increase_per_level = expertise_progression[expertise_level]['every_level']['HP']
+                        increase_every_5th_level = expertise_progression[expertise_level]['every_5th_level']['HP']
+                        '''
+            self.current_level += 1
+            print(expertise_progression[map_slider_to_expertise(self.expertise_vars.get('HP').get())]['every_level']['HP'] + expertise_progression[map_slider_to_expertise(self.expertise_vars.get('HP').get())]['every_5th_level']['HP'])
+            self.current_health += int(expertise_progression[map_slider_to_expertise(self.expertise_vars.get('HP').get())]['every_level']['HP'])
+            ## for every 5th level add the every_5th_level value
+            if self.current_level % 5 == 0:
+                self.current_health += int(expertise_progression[map_slider_to_expertise(self.expertise_vars.get('HP').get())]['every_5th_level']['HP'])
+            self.current_speed += 1
+            self.current_phys_atk += 1
+            self.current_phys_def += 1
+            self.current_pir_atk += 1
+            self.current_pir_def += 1
+            self.current_mag_atk += 1
+            self.current_mag_def += 1
+        self.drawPreview()
 
     # Function to clear values
     def clear_values(self):
@@ -432,3 +472,205 @@ class CharacterCreatorUI:
             for var in self.ability_vars: # Clear ability dropdowns
                 var.set("")
             self.modified = False
+
+    def drawPreview(self):
+        # Load and resize the main image
+        image = Image.open("./res/img/CardBackground.png")  # Ensure the correct file extension is used
+        image = image.convert("RGBA")  # Convert the image to RGBA mode to support transparency
+        image = image.resize((600, 300), Image.LANCZOS)  # Better resampling filter
+
+        # Load the smaller image
+        smaller_image = Image.open("./res/img/Ian_Full_Body.png")  # Load the image again
+        smaller_image = smaller_image.convert("RGBA")  # Convert to RGBA mode to support transparency
+        smaller_image = smaller_image.resize((133, 216), Image.LANCZOS)  # Resize to a smaller image
+
+        # Paste the smaller image onto the main image at a specific position, using its alpha channel
+        paste_position = (28, 31)  # Coordinates where you want to paste the smaller image
+        image.paste(smaller_image, paste_position, smaller_image)  # Use the third argument to include transparency
+
+        # Create a draw object to modify the main image
+        drawRarity = ImageDraw.Draw(image)
+        # Optional: Load a custom font (if available) or use default
+        # font = ImageFont.truetype("./res/fonts/your_font.ttf", 30)
+        font = ImageFont.load_default()  # Use the default font
+        # Define the position and text
+        text = str(self.map_slider_to_rarity(self.rarity_var.get()))  # Get the rarity from the slider
+        rarity_length = len(text)
+        text_position = (90-math.ceil(rarity_length*2.5), 30)  # Top-left corner of the image
+        # Draw the text on the main image
+        if text == "Common":
+            text_color = (255, 255, 255)
+        if text == "Uncommon":
+            text_color = (0, 255, 0)
+        if text == "Rare":
+            text_color = (0, 0, 255)
+        if text == "Epic":
+            text_color = (255, 0, 255)
+        if text == "Legendary":
+            text_color = (255, 215, 0)
+        drawRarity.text(text_position, text, fill=text_color, font=font)
+        del drawRarity
+
+        drawName = ImageDraw.Draw(image)
+        name = self.name_entry.get()
+        name_length = len(name)
+        name_position = (75-math.floor(name_length*1.3), 252)
+        name_color = (255, 255, 255)
+        drawName.text(name_position, name, fill=name_color, font=font, align="center")
+        del drawName
+
+        drawSpecies = ImageDraw.Draw(image)
+        species = self.species_var.get()
+        species_length = len(species)
+        species_position = (92-math.floor(species_length*2.5), 235)
+        species_color = (255, 255, 255)
+        drawSpecies.text(species_position, species, fill=species_color, font=font, align="center")
+        del drawSpecies
+
+        drawLevel = ImageDraw.Draw(image)
+        level = "LVL: " + str(self.current_level)
+        level_position = (180, 38)
+        level_color = (255, 255, 255)
+        drawLevel.text(level_position, level, fill=level_color, font=font, align="center")
+        del drawLevel
+
+        drawHP = ImageDraw.Draw(image)
+        hp = "HP : "
+        hp += str(self.current_health)
+        hp_position = (180, 60)
+        hp_color = (255, 255, 255)
+        drawHP.text(hp_position, hp, fill=hp_color, font=font, align="center")
+        del drawHP
+
+        drawSpeed = ImageDraw.Draw(image)
+        speed = "SPD : "
+        speed += str(self.current_speed)
+        speed_position = (180, 80)
+        speed_color = (255, 255, 255)
+        drawSpeed.text(speed_position, speed, fill=speed_color, font=font, align="center")
+        del drawSpeed
+
+        drawPhysAtk = ImageDraw.Draw(image)
+        physAtk = "PHYS ATK : "
+        physAtk += str(self.current_phys_atk)
+        physAtk_position = (180, 100)
+        physAtk_color = (255, 255, 255)
+        drawPhysAtk.text(physAtk_position, physAtk, fill=physAtk_color, font=font, align="center")
+        del drawPhysAtk
+
+        drawPirAtk = ImageDraw.Draw(image)
+        pirAtk = "PIR ATK : "
+        pirAtk += str(self.current_pir_atk)
+        pirAtk_position = (180, 120)
+        pirAtk_color = (255, 255, 255)
+        drawPirAtk.text(pirAtk_position, pirAtk, fill=pirAtk_color, font=font, align="center")
+        del drawPirAtk
+
+        drawMagAtk = ImageDraw.Draw(image)
+        magAtk = "MAG ATK : "
+        magAtk += str(self.current_mag_atk)
+        magAtk_position = (180, 140)
+        magAtk_color = (255, 255, 255)
+        drawMagAtk.text(magAtk_position, magAtk, fill=magAtk_color, font=font, align="center")
+        del drawMagAtk
+
+        drawPhysDef = ImageDraw.Draw(image)
+        physDef = "PHYS DEF : "
+        physDef += str(self.current_phys_def)
+        physDef_position = (180, 160)
+        physDef_color = (255, 255, 255)
+        drawPhysDef.text(physDef_position, physDef, fill=physDef_color, font=font, align="center")
+        del drawPhysDef
+
+        drawPirDef = ImageDraw.Draw(image)
+        pirDef = "PIR DEF : "
+        pirDef += str(self.current_pir_def)
+        pirDef_position = (180, 180)
+        pirDef_color = (255, 255, 255)
+        drawPirDef.text(pirDef_position, pirDef, fill=pirDef_color, font=font, align="center")
+        del drawPirDef
+
+        drawMagDef = ImageDraw.Draw(image)
+        magDef = "MAG DEF : "
+        magDef += str(self.current_mag_def)
+        magDef_position = (180, 200)
+        magDef_color = (255, 255, 255)
+        drawMagDef.text(magDef_position, magDef, fill=magDef_color, font=font, align="center")
+        del drawMagDef
+
+        drawHPExpertise = ImageDraw.Draw(image)
+        hpExpertise = "HP EXPERTISE : "
+        hpExpertise += self.map_slider_to_expertise(self.expertise_vars['HP'].get())
+        hpExpertise_position = (300, 60)
+        hpExpertise_color = (255, 255, 255)
+        drawHPExpertise.text(hpExpertise_position, hpExpertise, fill=hpExpertise_color, font=font, align="center")
+        del drawHPExpertise
+
+        drawSpeedExpertise = ImageDraw.Draw(image)
+        speedExpertise = "SPD EXPERTISE : "
+        speedExpertise += self.map_slider_to_expertise(self.expertise_vars['Speed'].get())
+        speedExpertise_position = (300, 80)
+        speedExpertise_color = (255, 255, 255)
+        drawSpeedExpertise.text(speedExpertise_position, speedExpertise, fill=speedExpertise_color, font=font, align="center")
+        del drawSpeedExpertise
+
+        drawPhysAtkExpertise = ImageDraw.Draw(image)
+        physAtkExpertise = "PHYS ATK EXPERTISE : "
+        physAtkExpertise += self.map_slider_to_expertise(self.expertise_vars['PHYS_ATK'].get())
+        physAtkExpertise_position = (300, 100)
+        physAtkExpertise_color = (255, 255, 255)
+        drawPhysAtkExpertise.text(physAtkExpertise_position, physAtkExpertise, fill=physAtkExpertise_color, font=font, align="center")
+        del drawPhysAtkExpertise
+
+        drawPirAtkExpertise = ImageDraw.Draw(image)
+        pirAtkExpertise = "PIR ATK EXPERTISE : "
+        pirAtkExpertise += self.map_slider_to_expertise(self.expertise_vars['PIR_ATK'].get())
+        pirAtkExpertise_position = (300, 120)
+        pirAtkExpertise_color = (255, 255, 255)
+        drawPirAtkExpertise.text(pirAtkExpertise_position, pirAtkExpertise, fill=pirAtkExpertise_color, font=font, align="center")
+        del drawPirAtkExpertise
+
+        drawMagAtkExpertise = ImageDraw.Draw(image)
+        magAtkExpertise = "MAG ATK EXPERTISE : "
+        magAtkExpertise += self.map_slider_to_expertise(self.expertise_vars['MAG_ATK'].get())
+        magAtkExpertise_position = (300, 140)
+        magAtkExpertise_color = (255, 255, 255)
+        drawMagAtkExpertise.text(magAtkExpertise_position, magAtkExpertise, fill=magAtkExpertise_color, font=font, align="center")
+        del drawMagAtkExpertise
+
+        drawPhysDefExpertise = ImageDraw.Draw(image)
+        physDefExpertise = "PHYS DEF EXPERTISE : "
+        physDefExpertise += self.map_slider_to_expertise(self.expertise_vars['PHYS_DEF'].get())
+        physDefExpertise_position = (300, 160)
+        physDefExpertise_color = (255, 255, 255)
+        drawPhysDefExpertise.text(physDefExpertise_position, physDefExpertise, fill=physDefExpertise_color, font=font, align="center")
+        del drawPhysDefExpertise
+
+        drawPirDefExpertise = ImageDraw.Draw(image)
+        pirDefExpertise = "PIR DEF EXPERTISE : "
+        pirDefExpertise += self.map_slider_to_expertise(self.expertise_vars['PIR_DEF'].get())
+        pirDefExpertise_position = (300, 180)
+        pirDefExpertise_color = (255, 255, 255)
+        drawPirDefExpertise.text(pirDefExpertise_position, pirDefExpertise, fill=pirDefExpertise_color, font=font, align="center")
+        del drawPirDefExpertise
+
+        drawMagDefExpertise = ImageDraw.Draw(image)
+        magDefExpertise = "MAG DEF EXPERTISE : "
+        magDefExpertise += self.map_slider_to_expertise(self.expertise_vars['MAG_DEF'].get())
+        magDefExpertise_position = (300, 200)
+        magDefExpertise_color = (255, 255, 255)
+        drawMagDefExpertise.text(magDefExpertise_position, magDefExpertise, fill=magDefExpertise_color, font=font, align="center")
+        del drawMagDefExpertise
+
+
+
+
+        # Convert the modified image to a Tkinter-compatible PhotoImage object
+        self.photo = ImageTk.PhotoImage(image)  # Store a reference to the image
+
+        # save image
+        #image.save("./res/img/FullCard.png")
+
+        # Create a label to display the image
+        image_label = ttk.Label(self.root, image=self.photo)  # Use the stored reference
+        image_label.grid(row=14, column=5, rowspan=10, padx=(20, 0), pady=20)
