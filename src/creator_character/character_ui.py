@@ -3,16 +3,12 @@ import json
 import os
 import tkinter as tk
 import math
-from PIL import Image, ImageTk
-from tkinter import ttk
+from tkinter import ttk, filedialog, messagebox
+from PIL import ImageDraw, ImageFont, Image, ImageTk
 from creator_character.utils import PlaceholderEntry, map_slider_to_expertise
 from creator_character.stats_calculator import calculate_and_save, expertise_progression
-from tkinter import filedialog, messagebox
 from creator_character.ability_tooltip import Tooltip
 from creator_character.passives_tooltip import PassivesTooltip
-from PIL import ImageDraw
-from PIL import ImageFont
-
 
 
 class CharacterCreatorUI:
@@ -33,6 +29,8 @@ class CharacterCreatorUI:
         self.current_pir_def = 0
         self.current_mag_atk = 0
         self.current_mag_def = 0
+        self.dodge = 0
+        self.crit = 0
 
         self.setup_ui(root)
         self.drawPreview()
@@ -407,7 +405,7 @@ class CharacterCreatorUI:
         canvas.grid(row=14, column=4, rowspan=10, sticky='ns', padx=(250, 0))
 
         # Create a button to load the drawPreview
-        preview_button = ttk.Button(root, text="Refresh Preview", command=self.drawPreview)
+        preview_button = ttk.Button(root, text="Refresh Preview", command=self.reset_preview)
         preview_button.grid(row=14, column=5, pady=(5, 5), padx=(0, 0))
 
         # Previous Level Button
@@ -453,11 +451,6 @@ class CharacterCreatorUI:
 
     def next_level(self):
         if self.current_level < 40:
-            '''
-                              if stat == 'HP':
-                        increase_per_level = expertise_progression[expertise_level]['every_level']['HP']
-                        increase_every_5th_level = expertise_progression[expertise_level]['every_5th_level']['HP']
-                        '''
             self.current_level += 1
             self.current_health += int(expertise_progression[map_slider_to_expertise(self.expertise_vars.get('HP').get())]['every_level']['HP'])
             ## for every 5th level add the every_5th_level value
@@ -501,6 +494,52 @@ class CharacterCreatorUI:
             for var in self.ability_vars: # Clear ability dropdowns
                 var.set("")
             self.modified = False
+
+    def reset_preview(self):
+        self.current_level = 1
+        # if current health isn't an integer
+        if self.start_stat_vars[0].get() == "1-20 recommended":
+            self.current_health = 0
+        else:
+            self.current_health = int(self.start_stat_vars[0].get())
+        
+        # if current speed isn't an integer
+        if self.start_stat_vars[1].get() == "1-20 recommended":
+            self.current_speed = 0
+        else:
+            self.current_speed = int(self.start_stat_vars[1].get())
+        
+        if self.start_stat_vars[2].get() == "1-20 recommended":
+            self.current_phys_atk = 0
+        else:
+            self.current_phys_atk = int(self.start_stat_vars[2].get())
+
+        if self.start_stat_vars[3].get() == "1-20 recommended":
+            self.current_phys_def = 0
+        else:
+            self.current_phys_def = int(self.start_stat_vars[3].get())
+
+        if self.start_stat_vars[4].get() == "1-20 recommended":
+            self.current_pir_atk = 0
+        else:
+            self.current_pir_atk = int(self.start_stat_vars[4].get())
+        
+        if self.start_stat_vars[5].get() == "1-20 recommended":
+            self.current_pir_def = 0
+        else:
+            self.current_pir_def = int(self.start_stat_vars[5].get())
+        
+        if self.start_stat_vars[6].get() == "1-20 recommended":
+            self.current_mag_atk = 0
+        else:
+            self.current_mag_atk = int(self.start_stat_vars[6].get())
+        
+        if self.start_stat_vars[7].get() == "1-20 recommended":
+            self.current_mag_def = 0
+        else:
+            self.current_mag_def = int(self.start_stat_vars[7].get())
+            
+        self.drawPreview()
 
     def drawPreview(self):
         # Load and resize the main image
@@ -563,136 +602,57 @@ class CharacterCreatorUI:
         drawLevel.text(level_position, level, fill=level_color, font=font, align="center")
         del drawLevel
 
-        drawHP = ImageDraw.Draw(image)
-        hp = "HP : "
-        hp += str(self.current_health)
-        hp_position = (180, 60)
-        hp_color = (255, 255, 255)
-        drawHP.text(hp_position, hp, fill=hp_color, font=font, align="center")
-        del drawHP
+        drawPositions = [
+            (180, 60),  # HP
+            (180, 80),  # Speed
+            (180, 100),  # PHYS ATK
+            (180, 120),  # PIR ATK
+            (180, 140),  # MAG ATK
+            (180, 160),  # PHYS DEF
+            (180, 180),  # PIR DEF
+            (180, 200),  # MAG DEF
+            (180, 220),  # Dodge
+            (180, 240), # PHYS Crit Chance
+            (180, 260), # PIR Crit Chance
+            (180, 280), # MAG Crit Chance
+            (300, 60),  # HP EXPERTISE
+            (300, 80),  # Speed EXPERTISE
+            (300, 100),  # PHYS ATK EXPERTISE
+            (300, 120),  # PIR ATK EXPERTISE
+            (300, 140),  # MAG ATK EXPERTISE
+            (300, 160),  # PHYS DEF EXPERTISE
+            (300, 180),  # PIR DEF EXPERTISE
+            (300, 200)  # MAG DEF EXPERTISE
+            
+        ]
 
-        drawSpeed = ImageDraw.Draw(image)
-        speed = "SPD : "
-        speed += str(self.current_speed)
-        speed_position = (180, 80)
-        speed_color = (255, 255, 255)
-        drawSpeed.text(speed_position, speed, fill=speed_color, font=font, align="center")
-        del drawSpeed
+        drawTexts = [
+            "HP : " + str(self.current_health),
+            "SPD : " + str(self.current_speed),
+            "PHYS ATK : " + str(self.current_phys_atk),
+            "PIR ATK : " + str(self.current_pir_atk),
+            "MAG ATK : " + str(self.current_mag_atk),
+            "PHYS DEF : " + str(self.current_phys_def),
+            "PIR DEF : " + str(self.current_pir_def),
+            "MAG DEF : " + str(self.current_mag_def),
+            "Dodge : " + str(round((self.current_speed * 0.6) / math.sqrt((self.current_level + 16))/2, 2))+ "%",
+            "PHYS Crit Chance : " + str(round((self.current_phys_atk * 0.3 + self.current_speed *0.3) / math.sqrt((self.current_level + 16)), 2))+ "%",
+            "PIR Crit Chance : " + str(round((self.current_pir_atk * 0.3 + self.current_speed *0.3) / math.sqrt((self.current_level + 16)), 2))+ "%",
+            "MAG Crit Chance : " + str(round((self.current_mag_atk * 0.3 + self.current_speed *0.3) / math.sqrt((self.current_level + 16)), 2))+ "%",
+            "HP EXPERTISE : " + self.map_slider_to_expertise(self.expertise_vars['HP'].get()),
+            "SPD EXPERTISE : " + self.map_slider_to_expertise(self.expertise_vars['Speed'].get()),
+            "PHYS ATK EXPERTISE : " + self.map_slider_to_expertise(self.expertise_vars['PHYS_ATK'].get()),
+            "PIR ATK EXPERTISE : " + self.map_slider_to_expertise(self.expertise_vars['PIR_ATK'].get()),
+            "MAG ATK EXPERTISE : " + self.map_slider_to_expertise(self.expertise_vars['MAG_ATK'].get()),
+            "PHYS DEF EXPERTISE : " + self.map_slider_to_expertise(self.expertise_vars['PHYS_DEF'].get()),
+            "PIR DEF EXPERTISE : " + self.map_slider_to_expertise(self.expertise_vars['PIR_DEF'].get()),
+            "MAG DEF EXPERTISE : " + self.map_slider_to_expertise(self.expertise_vars['MAG_DEF'].get())
+        ]
 
-        drawPhysAtk = ImageDraw.Draw(image)
-        physAtk = "PHYS ATK : "
-        physAtk += str(self.current_phys_atk)
-        physAtk_position = (180, 100)
-        physAtk_color = (255, 255, 255)
-        drawPhysAtk.text(physAtk_position, physAtk, fill=physAtk_color, font=font, align="center")
-        del drawPhysAtk
-
-        drawPirAtk = ImageDraw.Draw(image)
-        pirAtk = "PIR ATK : "
-        pirAtk += str(self.current_pir_atk)
-        pirAtk_position = (180, 120)
-        pirAtk_color = (255, 255, 255)
-        drawPirAtk.text(pirAtk_position, pirAtk, fill=pirAtk_color, font=font, align="center")
-        del drawPirAtk
-
-        drawMagAtk = ImageDraw.Draw(image)
-        magAtk = "MAG ATK : "
-        magAtk += str(self.current_mag_atk)
-        magAtk_position = (180, 140)
-        magAtk_color = (255, 255, 255)
-        drawMagAtk.text(magAtk_position, magAtk, fill=magAtk_color, font=font, align="center")
-        del drawMagAtk
-
-        drawPhysDef = ImageDraw.Draw(image)
-        physDef = "PHYS DEF : "
-        physDef += str(self.current_phys_def)
-        physDef_position = (180, 160)
-        physDef_color = (255, 255, 255)
-        drawPhysDef.text(physDef_position, physDef, fill=physDef_color, font=font, align="center")
-        del drawPhysDef
-
-        drawPirDef = ImageDraw.Draw(image)
-        pirDef = "PIR DEF : "
-        pirDef += str(self.current_pir_def)
-        pirDef_position = (180, 180)
-        pirDef_color = (255, 255, 255)
-        drawPirDef.text(pirDef_position, pirDef, fill=pirDef_color, font=font, align="center")
-        del drawPirDef
-
-        drawMagDef = ImageDraw.Draw(image)
-        magDef = "MAG DEF : "
-        magDef += str(self.current_mag_def)
-        magDef_position = (180, 200)
-        magDef_color = (255, 255, 255)
-        drawMagDef.text(magDef_position, magDef, fill=magDef_color, font=font, align="center")
-        del drawMagDef
-
-        drawHPExpertise = ImageDraw.Draw(image)
-        hpExpertise = "HP EXPERTISE : "
-        hpExpertise += self.map_slider_to_expertise(self.expertise_vars['HP'].get())
-        hpExpertise_position = (300, 60)
-        hpExpertise_color = (255, 255, 255)
-        drawHPExpertise.text(hpExpertise_position, hpExpertise, fill=hpExpertise_color, font=font, align="center")
-        del drawHPExpertise
-
-        drawSpeedExpertise = ImageDraw.Draw(image)
-        speedExpertise = "SPD EXPERTISE : "
-        speedExpertise += self.map_slider_to_expertise(self.expertise_vars['Speed'].get())
-        speedExpertise_position = (300, 80)
-        speedExpertise_color = (255, 255, 255)
-        drawSpeedExpertise.text(speedExpertise_position, speedExpertise, fill=speedExpertise_color, font=font, align="center")
-        del drawSpeedExpertise
-
-        drawPhysAtkExpertise = ImageDraw.Draw(image)
-        physAtkExpertise = "PHYS ATK EXPERTISE : "
-        physAtkExpertise += self.map_slider_to_expertise(self.expertise_vars['PHYS_ATK'].get())
-        physAtkExpertise_position = (300, 100)
-        physAtkExpertise_color = (255, 255, 255)
-        drawPhysAtkExpertise.text(physAtkExpertise_position, physAtkExpertise, fill=physAtkExpertise_color, font=font, align="center")
-        del drawPhysAtkExpertise
-
-        drawPirAtkExpertise = ImageDraw.Draw(image)
-        pirAtkExpertise = "PIR ATK EXPERTISE : "
-        pirAtkExpertise += self.map_slider_to_expertise(self.expertise_vars['PIR_ATK'].get())
-        pirAtkExpertise_position = (300, 120)
-        pirAtkExpertise_color = (255, 255, 255)
-        drawPirAtkExpertise.text(pirAtkExpertise_position, pirAtkExpertise, fill=pirAtkExpertise_color, font=font, align="center")
-        del drawPirAtkExpertise
-
-        drawMagAtkExpertise = ImageDraw.Draw(image)
-        magAtkExpertise = "MAG ATK EXPERTISE : "
-        magAtkExpertise += self.map_slider_to_expertise(self.expertise_vars['MAG_ATK'].get())
-        magAtkExpertise_position = (300, 140)
-        magAtkExpertise_color = (255, 255, 255)
-        drawMagAtkExpertise.text(magAtkExpertise_position, magAtkExpertise, fill=magAtkExpertise_color, font=font, align="center")
-        del drawMagAtkExpertise
-
-        drawPhysDefExpertise = ImageDraw.Draw(image)
-        physDefExpertise = "PHYS DEF EXPERTISE : "
-        physDefExpertise += self.map_slider_to_expertise(self.expertise_vars['PHYS_DEF'].get())
-        physDefExpertise_position = (300, 160)
-        physDefExpertise_color = (255, 255, 255)
-        drawPhysDefExpertise.text(physDefExpertise_position, physDefExpertise, fill=physDefExpertise_color, font=font, align="center")
-        del drawPhysDefExpertise
-
-        drawPirDefExpertise = ImageDraw.Draw(image)
-        pirDefExpertise = "PIR DEF EXPERTISE : "
-        pirDefExpertise += self.map_slider_to_expertise(self.expertise_vars['PIR_DEF'].get())
-        pirDefExpertise_position = (300, 180)
-        pirDefExpertise_color = (255, 255, 255)
-        drawPirDefExpertise.text(pirDefExpertise_position, pirDefExpertise, fill=pirDefExpertise_color, font=font, align="center")
-        del drawPirDefExpertise
-
-        drawMagDefExpertise = ImageDraw.Draw(image)
-        magDefExpertise = "MAG DEF EXPERTISE : "
-        magDefExpertise += self.map_slider_to_expertise(self.expertise_vars['MAG_DEF'].get())
-        magDefExpertise_position = (300, 200)
-        magDefExpertise_color = (255, 255, 255)
-        drawMagDefExpertise.text(magDefExpertise_position, magDefExpertise, fill=magDefExpertise_color, font=font, align="center")
-        del drawMagDefExpertise
-
-
-
+        for position, text in zip(drawPositions, drawTexts):
+            drawText = ImageDraw.Draw(image)
+            drawText.text(position, text, fill=(255, 255, 255), font=font, align="center")
+            del drawText
 
         # Convert the modified image to a Tkinter-compatible PhotoImage object
         self.photo = ImageTk.PhotoImage(image)  # Store a reference to the image
