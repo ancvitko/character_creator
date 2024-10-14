@@ -49,92 +49,58 @@ class CharacterCreatorUI:
         if not filename:
             return  # If no file is selected, return
 
+    def load_character(self):
+        # Open a file dialog to select a character file with default directory './characters/'
+        # Create characters directory if it doesn't exist
+        if not os.path.exists("characters"):
+            os.makedirs("characters")
+        filename = filedialog.askopenfilename(initialdir='./characters/', filetypes=[("JSON Files", "*.json")])
+        if not filename:
+            return  # If no file is selected, return
+
         try:
             with open(filename, 'r') as file:
-                lines = file.readlines()
+                character_data = json.load(file)
 
                 # Read character name
-                name_line = lines[0].strip()
-                name = name_line.split(": ")[1] if ": " in name_line else ""
+                name = character_data.get("Character Name", "")
                 self.name_entry.delete(0, tk.END)
                 self.name_entry.insert(0, name)
 
                 # Read species
-                species_line = lines[1].strip()
-                species = species_line.split(": ")[1] if ": " in species_line else ""
+                species = character_data.get("Species", "")
                 self.species_var.set(species)
 
                 # Read rarity
-                rarity_line = lines[2].strip()
-                rarity = rarity_line.split(": ")[1] if ": " in rarity_line else ""
-                self.rarity_var.set(self.map_rarity_to_slider(rarity))
+                rarity = character_data.get("Rarity", "")
+                rarity_value = self.map_rarity_to_slider(rarity)
+                self.rarity_var.set(rarity_value)
 
                 # Read expertise levels
-                for i, line in enumerate(lines[5:14]):  # Adjusted the start index to match expertise levels
-                    if ": " in line:
-                        stat, level = line.split(": ")
-                        self.expertise_vars[stat.split()[0]].set(self.map_expertise_to_slider(level.strip()))
+                expertise_levels = character_data.get("Expertise Levels", {})
+                for stat, level in expertise_levels.items():
+                    self.expertise_vars[stat].set(self.map_expertise_to_slider(level))
 
                 # Read Level 1 stats
-                for i, line in enumerate(lines[17:25]):  # Adjusted the start index to match level 1 stats
-                    if ": " in line:
-                        stat, value = line.split(": ")
-                        self.start_stat_vars[i].set(value.strip())
-
-                # Find the abilities section
-                abilities_start = None
-                for i, line in enumerate(lines):
-                    if "Abilities:" in line:
-                        abilities_start = i + 1  # Abilities section starts after this line
-                        break
-
-                if abilities_start is None:
-                    raise ValueError("Abilities section not found in the file.")
+                starting_stats = character_data.get("Levels", [])
+                if starting_stats:
+                    level_1_stats = starting_stats[0].get("Stats", {})
+                    for i, (stat, value) in enumerate(level_1_stats.items()):
+                        self.start_stat_vars[i].set(value)
 
                 # Read Abilities
-                abilities = []
-                for i in range(abilities_start, len(lines)):
-                    line = lines[i].strip()
-                    if line == "":
-                        continue
-                    if line.startswith("LVL "):  # This identifies each ability
-                        ability_name = line.split(": ")[1].strip()
-                        abilities.append(ability_name)
+                abilities = character_data.get("Abilities", [])
+                for i, ability_info in enumerate(abilities):
+                    ability = ability_info.get("Ability", "")
+                    self.ability_vars[i].set(ability)
 
-                # Update the ability dropdowns with loaded abilities
-                for i, ability_var in enumerate(self.ability_vars):
-                    if i < len(abilities):
-                        ability_var.set(abilities[i])
-                    else:
-                        ability_var.set("")  # Reset any leftover ability vars if not present in the file
-
-                # Find the passives section
-                passives_start = None
-                for i, line in enumerate(lines):
-                    if "Passives:" in line:
-                        passives_start = i + 1
-                        break
-
-                if passives_start is None:
-                    raise ValueError("Passives section not found in the file.")
-                
                 # Read Passives
-                passives = []
-                for i in range(passives_start, len(lines)):
-                    line = lines[i].strip()
-                    if line == "":
-                        continue
-                    if line.startswith("Passive #"):  # This identifies each passive
-                        passive_name = line.split(": ")[1].strip()
-                        passives.append(passive_name)
+                passives = character_data.get("Passives", [])
+                for i, passive_info in enumerate(passives):
+                    passive = passive_info.get("Passive", "")
+                    self.passive_vars[i].set(passive)
 
-                # Update the passive dropdowns with loaded passives
-                for i, passive_var in enumerate(self.passive_vars):
-                    if i < len(passives):
-                        passive_var.set(passives[i])
-                    else:
-                        passive_var.set("")  # Reset any leftover passive vars if not present in the file
-                
+                messagebox.showinfo("Loaded", f"Character '{name}' loaded from {filename}")
 
             self.current_level = 1
             self.current_health = int(self.start_stat_vars[0].get())
@@ -147,6 +113,7 @@ class CharacterCreatorUI:
             self.current_mag_def = int(self.start_stat_vars[7].get())
             self.modified = False  # Reset the modified flag after loading a character
             self.drawPreview()
+
         except Exception as e:
             messagebox.showerror("Error", f"Could not load character: {e}")
 
@@ -638,7 +605,7 @@ class CharacterCreatorUI:
             "Dodge : " + str(round((self.current_speed * 0.6) / math.sqrt((self.current_level + 16))/2, 2))+ "%",
             "PHYS Crit Chance : " + str(round((self.current_phys_atk * 0.3 + self.current_speed *0.3) / math.sqrt((self.current_level-1 + 16)), 2))+ "%",
             "PIR Crit Chance : " + str(round((self.current_pir_atk * 0.3 + self.current_speed *0.3) / math.sqrt((self.current_level-1 + 16)), 2))+ "%",
-            "MAG Crit Chance : " + str(round((self.current_mag_atk * 0.3 + self.current_speed *0.3) / math.sqrt((self.current_level-1 + 16)), 2))+ "%",
+            "MAG Crit Chance : " + str(round((self.current_mag_atk * 0.3 + self.current_speed *0.3) / math.sqrt((self.current_level + 16)), 2))+ "%",
             "HP EXPERTISE : " + self.map_slider_to_expertise(self.expertise_vars['HP'].get()),
             "SPD EXPERTISE : " + self.map_slider_to_expertise(self.expertise_vars['Speed'].get()),
             "PHYS ATK EXPERTISE : " + self.map_slider_to_expertise(self.expertise_vars['PHYS_ATK'].get()),

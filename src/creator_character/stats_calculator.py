@@ -1,5 +1,3 @@
-# stats_calculator.py
-
 import json
 import os
 import math
@@ -36,7 +34,7 @@ def calculate_and_save(char_name, species, rarity_value, start_stat_vars, expert
     os.makedirs(dir_path, exist_ok=True)
 
     # Construct the file path using the character name
-    file_path = os.path.join(dir_path, f"{char_name}.txt")
+    file_path = os.path.join(dir_path, f"{char_name}.json")
 
     try:
         # Get starting stats as integers
@@ -57,104 +55,87 @@ def calculate_and_save(char_name, species, rarity_value, start_stat_vars, expert
 
     # Save stats for each level in the file
     try:
-        with open(file_path, "w") as file:
-            file.write(f"Character Name: {char_name}\n")
-            file.write(f"Species: {species}\n")
-            file.write(f"Rarity: {rarity}\n")
-            file.write(f"____________________\n\n")
+        character_data = {
+            "Character Name": char_name,
+            "Species": species,
+            "Rarity": rarity,
+            "Expertise Levels": {stat: expertise_level for stat, expertise_level in expertise.items()},
+            "Levels": []
+        }
 
-            # Write the chosen expertise levels
-            file.write(f"Expertise Levels:\n")
+        for level in range(total_levels):
+            final_stats = starting_stats.copy()
             for stat, expertise_level in expertise.items():
-                file.write(f"\t{stat} Expertise: {expertise_level}\n")
-            file.write(f"____________________\n\n")
-
-            for level in range(total_levels):
-                final_stats = starting_stats.copy()
-                for stat, expertise_level in expertise.items():
-                    if stat == 'HP':
-                        increase_per_level = expertise_progression[expertise_level]['every_level']['HP']
-                        increase_every_5th_level = expertise_progression[expertise_level]['every_5th_level']['HP']
-                    else:
-                        increase_per_level = expertise_progression[expertise_level]['every_level']['Secondary']
-                        increase_every_5th_level = expertise_progression[expertise_level]['every_5th_level']['Secondary']
-
-                    # Calculate increases based on the current level
-                    regular_increase = increase_per_level * level
-                    special_increase = increase_every_5th_level * ((level + 1) // 5)
-
-                    final_stats[stat] += regular_increase + special_increase
-
-                file.write(f"Level {level + 1} Stats:\n")
-                for stat, value in final_stats.items():
-                    file.write(f"\t{stat}: {value}\n")
-                dodge = round((final_stats['Speed'] * 0.6) / math.sqrt((level + 16))/2, 2)
-                phys_crit = round((final_stats['PHYS_ATK'] * 0.3 + final_stats['Speed'] *0.3) / math.sqrt((level + 16)), 2)
-                pir_crit = round((final_stats['PIR_ATK'] * 0.3 + final_stats['Speed'] *0.3) / math.sqrt((level + 16)), 2)
-                mag_crit = round((final_stats['MAG_ATK'] * 0.3 + final_stats['Speed'] *0.3) / math.sqrt((level + 16)), 2)
-                file.write(f"\tDodge: {dodge}%\n")
-                file.write(f"\tPhysical Crit: {phys_crit}%\n")
-                file.write(f"\tPierce Crit: {pir_crit}%\n")
-                file.write(f"\tMagic Crit: {mag_crit}%\n")
-                file.write("\n")
-                
-            # list to array of strings abilityvar
-            abilities = [ability.get() for ability in ability_vars]
-            # Write the abilities
-            abilityLevels = ['LVL 1 #1', 'LVL 1 #2', 'LVL 1 #3', 'LVL 1 #4', 'LVL 3', 'LVL 5', 'LVL 8', 'LVL 10', 'LVL 13', 'LVL 15', 'LVL 18', 'LVL 20', 'LVL 23', 'LVL 25', 'LVL 28', 'LVL 30', 'LVL 33', 'LVL 35', 'LVL 38', 'LVL 40']
-            ability_level_keys = ['LVL1_ABILITIES', 'LVL1_ABILITIES', 'LVL1_ABILITIES', 'LVL1_ABILITIES', 'LVL3_ABILITIES', 'LVL5_ABILITIES', 'LVL8_ABILITIES', 'LVL10_ABILITIES', 'LVL13_ABILITIES', 'LVL15_ABILITIES', 'LVL18_ABILITIES', 'LVL20_ABILITIES', 'LVL23_ABILITIES', 'LVL25_ABILITIES', 'LVL28_ABILITIES', 'LVL30_ABILITIES', 'LVL33_ABILITIES', 'LVL35_ABILITIES', 'LVL38_ABILITIES', 'LVL40_ABILITIES']
-            file.write(f"____________________\n\n")
-            # Load in the json file
-            with open('./dep/abilities.json', 'r') as f:
-                ABILITIES = json.load(f)
-            file.write(f"Abilities:\n")
-            for i, ability in enumerate(abilities):
-                ability_level_key = ability_level_keys[i]  # Get the corresponding ability level key
-                if ability in ABILITIES[ability_level_key]:
-                    ability_data = ABILITIES[ability_level_key][ability]
-                    file.write(f"{abilityLevels[i]}: {ability}\n")
-                    file.write(f"\tDescription: {ability_data['description']}\n")
-                    if ability_data['effect_1'] != 'NONE' and ability_data['effect_1'] != "":
-                        file.write(f"\tEffect#1: {ability_data['effect_1']}\n")
-                        file.write(f"\tValue#1: {ability_data['value_1']}\n")
-                    if ability_data['effect_2'] != 'NONE' and ability_data['effect_2'] != "":
-                        file.write(f"\tEffect#2: {ability_data['effect_2']}\n")
-                        file.write(f"\tValue#2: {ability_data['value_2']}\n")
-                    if ability_data['effect_3'] != 'NONE' and ability_data['effect_3'] != "":
-                        file.write(f"\tEffect#3: {ability_data['effect_3']}\n")
-                        file.write(f"\tValue#3: {ability_data['value_3']}\n")
-                    if ability_data['effect_4'] != 'NONE' and ability_data['effect_4'] != "":
-                        file.write(f"\tEffect#4: {ability_data['effect_4']}\n")
-                        file.write(f"\tValue#4: {ability_data['value_4']}\n")
-                    if ability_data['effect_5'] != 'NONE' and ability_data['effect_5'] != "":
-                        file.write(f"\tEffect#5: {ability_data['effect_5']}\n")
-                        file.write(f"\tValue#5: {ability_data['value_5']}\n")
-                    if ability_data['effect_6'] != 'NONE' and ability_data['effect_6'] != "":
-                        file.write(f"\tEffect#6: {ability_data['effect_6']}\n")
-                        file.write(f"\tValue#6: {ability_data['value_6']}\n")
-                    file.write(f"\tCooldown: {ability_data['cooldown']}\n\n")
+                if stat == 'HP':
+                    increase_per_level = expertise_progression[expertise_level]['every_level']['HP']
+                    increase_every_5th_level = expertise_progression[expertise_level]['every_5th_level']['HP']
                 else:
-                    file.write(f"{abilityLevels[i]}: {ability} NONE\n")
-            file.write(f"____________________\n\n")
-            file.write(f"Passives:\n")
-            PASSIVES = {}
-            with open('./dep/passives.json', 'r') as f:
-                PASSIVES = json.load(f)
-                
-            passives = [passive.get() for passive in passives_vars]
-            for i, passive in enumerate(passives):
-                if passive in PASSIVES:
-                    file.write(f"Passive #{i}: {passive}\n")
-                    if PASSIVES[passive]['description1'] != 'NONE':
-                        file.write(f"\tDescription: {PASSIVES[passive]['description1']}\n")
-                        file.write(f"\tValue: {PASSIVES[passive]['value1']}\n\n")
-                    if PASSIVES[passive]['description2'] != 'NONE':
-                        file.write(f"\tDescription: {PASSIVES[passive]['description2']}\n")
-                        file.write(f"\tValue: {PASSIVES[passive]['value2']}\n\n")
-                else:
-                    file.write(f"Passive #{i}: NONE\n")
-            file.write(f"____________________\n\n")
-            
+                    increase_per_level = expertise_progression[expertise_level]['every_level']['Secondary']
+                    increase_every_5th_level = expertise_progression[expertise_level]['every_5th_level']['Secondary']
+
+                # Calculate increases based on the current level
+                regular_increase = increase_per_level * level
+                special_increase = increase_every_5th_level * ((level + 1) // 5)
+
+                final_stats[stat] += regular_increase + special_increase
+
+            level_stats = {
+                "Level": level + 1,
+                "Stats": {stat: value for stat, value in final_stats.items()},
+                "Dodge": round((final_stats['Speed'] * 0.6) / math.sqrt((level + 16))/2, 2),
+                "Physical Crit": round((final_stats['PHYS_ATK'] * 0.3 + final_stats['Speed'] *0.3) / math.sqrt((level + 16)), 2),
+                "Pierce Crit": round((final_stats['PIR_ATK'] * 0.3 + final_stats['Speed'] *0.3) / math.sqrt((level + 16)), 2),
+                "Magic Crit": round((final_stats['MAG_ATK'] * 0.3 + final_stats['Speed'] *0.3) / math.sqrt((level + 16)), 2)
+            }
+            character_data["Levels"].append(level_stats)
+
+        # list to array of strings abilityvar
+        abilities = [ability.get() for ability in ability_vars]
+        abilityLevels = ['LVL 1 #1', 'LVL 1 #2', 'LVL 1 #3', 'LVL 1 #4', 'LVL 3', 'LVL 5', 'LVL 8', 'LVL 10', 'LVL 13', 'LVL 15', 'LVL 18', 'LVL 20', 'LVL 23', 'LVL 25', 'LVL 28', 'LVL 30', 'LVL 33', 'LVL 35', 'LVL 38', 'LVL 40']
+        ability_level_keys = ['LVL1_ABILITIES', 'LVL1_ABILITIES', 'LVL1_ABILITIES', 'LVL1_ABILITIES', 'LVL3_ABILITIES', 'LVL5_ABILITIES', 'LVL8_ABILITIES', 'LVL10_ABILITIES', 'LVL13_ABILITIES', 'LVL15_ABILITIES', 'LVL18_ABILITIES', 'LVL20_ABILITIES', 'LVL23_ABILITIES', 'LVL25_ABILITIES', 'LVL28_ABILITIES', 'LVL30_ABILITIES', 'LVL33_ABILITIES', 'LVL35_ABILITIES', 'LVL38_ABILITIES', 'LVL40_ABILITIES']
+        character_data["Abilities"] = []
+
+        # Load in the json file
+        with open('./dep/abilities.json', 'r') as f:
+            ABILITIES = json.load(f)
+
+        for i, ability in enumerate(abilities):
+            ability_level_key = ability_level_keys[i]  # Get the corresponding ability level key
+            ability_data = {}
+            if ability in ABILITIES[ability_level_key]:
+                ability_data = ABILITIES[ability_level_key][ability]
+            ability_info = {
+                "Level": abilityLevels[i],
+                "Ability": ability,
+                "Description": ability_data.get("description", ""),
+                "Effects": [
+                    {"Effect": ability_data.get(f"effect_{j}", ""), "Value": ability_data.get(f"value_{j}", "")}
+                    for j in range(1, 7)
+                    if ability_data.get(f"effect_{j}", "") != "NONE" and ability_data.get(f"effect_{j}", "") != ""
+                ],
+                "Cooldown": ability_data.get("cooldown", "")
+            }
+            character_data["Abilities"].append(ability_info)
+
+        character_data["Passives"] = []
+
+        with open('./dep/passives.json', 'r') as f:
+            PASSIVES = json.load(f)
+
+        passives = [passive.get() for passive in passives_vars]
+
+        for i, passive in enumerate(passives):
+            passive_info = {"Passive": passive}
+            if passive in PASSIVES:
+                passive_info["Description1"] = PASSIVES[passive].get("description1", "")
+                passive_info["Value1"] = PASSIVES[passive].get("value1", "")
+                passive_info["Description2"] = PASSIVES[passive].get("description2", "")
+                passive_info["Value2"] = PASSIVES[passive].get("value2", "")
+            character_data["Passives"].append(passive_info)
+
+        with open(file_path, "w") as file:
+            json.dump(character_data, file, indent=4)
+
         messagebox.showinfo("Saved", f"Character '{char_name}' stats saved to {file_path}")
 
         '''
